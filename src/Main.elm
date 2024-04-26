@@ -176,7 +176,7 @@ isGameWon model =
 
 view : Model -> Html Msg
 view model =
-    layout [ width fill, height fill ]
+    layout [ width fill, height fill, bgDarkGray ]
         (column [ width (fill |> maximum 500), height fill, centerX, bgCyan ]
             [ viewHeader model
             , viewGridArea model
@@ -189,9 +189,7 @@ view model =
 viewHeader model =
     row
         [ width fill
-
-        --, Border.color (rgb255 255 0 0)
-        --, Border.widthEach { top = 0, bottom = 1, left = 0, right = 0 }
+        , bgDarkGray
         ]
         [ viewHeaderBurger model
         , viewHeaderDate model
@@ -200,7 +198,7 @@ viewHeader model =
 
 
 viewHeaderBurger model =
-    el [ alignLeft, bgPink ]
+    el [ alignLeft, Font.color colorWhite ]
         (text <|
             String.fromInt <|
                 daysSinceStart model.timestamp
@@ -212,7 +210,7 @@ viewHeaderDate model =
         date =
             model.timestamp
     in
-    el [ centerX, bgYell ] (text <| toUtcDate date)
+    el [ centerX, Font.color colorWhite ] (text <| toUtcDate date)
 
 
 viewHeaderTime model =
@@ -220,7 +218,7 @@ viewHeaderTime model =
         date =
             model.timestamp
     in
-    el [ alignRight, bgPink ] (text <| toUtcTime date)
+    el [ alignRight, Font.color colorWhite ] (text <| toUtcTime date)
 
 
 toUtcTime : Time.Posix -> String
@@ -294,7 +292,7 @@ type Tile
 
 viewGridArea : Model -> Element Msg
 viewGridArea model =
-    el [ bgYell, width fill, height (fillPortion 8) ] (viewGrid model)
+    el [ bgDarkGray, width fill, height (fillPortion 8) ] (viewGrid model)
 
 
 emptyTile =
@@ -383,6 +381,7 @@ tileBgColor tile =
             bgWhite
 
 
+tileBorderColor : Tile -> Color
 tileBorderColor tile =
     case tile of
         EmptyTile ->
@@ -391,13 +390,13 @@ tileBorderColor tile =
         FilledTile match ->
             case match of
                 Missing _ ->
-                    colorDarkGray
+                    colorWhite
 
                 Exact _ ->
-                    colorGreen
+                    colorAkiPurple
 
                 Present _ ->
-                    colorYellow
+                    colorAkiBlue
 
                 Unknown _ ->
                     colorGray
@@ -416,10 +415,10 @@ tileFontColor match =
             colorWhite
 
         Present _ ->
-            colorBlack
+            colorWhite
 
         Unknown _ ->
-            colorWhite
+            colorBlack
 
 
 tileChar : MatchedChar -> Char
@@ -492,7 +491,7 @@ type Keyboard
 
 viewKeyboardArea : Model -> Element Msg
 viewKeyboardArea model =
-    el [ bgPink, width fill, height (fillPortion 4) ] (viewKeyboard model)
+    el [ bgDarkGray, width fill, height (fillPortion 4) ] (viewKeyboard model)
 
 
 viewKeyboard : Model -> Element Msg
@@ -608,10 +607,23 @@ buttonColor model k =
             tileBgColor (FilledTile (bestLetterColor model (Debug.log "check color del bottone" ch)))
 
         KeyBackspace ->
-            bgCyan
+            bgSpecialKey
 
         KeyEnter ->
-            bgCyan
+            bgSpecialKey
+
+
+buttonFontColor : Model -> Keyboard -> Color
+buttonFontColor model k =
+    case k of
+        Key ch ->
+            tileFontColor (bestLetterColor model (Debug.log "check color del bottone" ch))
+
+        KeyBackspace ->
+            colorWhite
+
+        KeyEnter ->
+            colorWhite
 
 
 
@@ -623,9 +635,7 @@ viewMakeButton : Model -> Keyboard -> Element Msg
 viewMakeButton model k =
     el
         [ buttonColor model k
-
-        -- , tileFontColor TILE
-        -- , tileBgColor TILE
+        , Font.color (buttonFontColor model k)
         , height (px 58)
         , width (px (viewKeyWidth k))
         , viewKeyEvent k
@@ -648,23 +658,29 @@ viewEndGame model =
     el
         [ centerX
         , centerY
+        , width fill
         , height (fillPortion 1)
         , Font.size 32
+        , bgDarkGray
+        , Font.color colorWhite
         ]
-        (if isGameEnded model then
-            if isGameWon model then
-                text "🎉"
+        (el [ centerX ]
+            (if isGameEnded model then
+                if isGameWon model then
+                    text "YAY 🎉"
 
-            else
-                text "🥺"
+                else
+                    text "Oh noes 🥺"
 
-         else
-            text ""
+             else
+                text ""
+            )
         )
 
 
 
 --- COLORS
+-- 808 036
 
 
 colorGray =
@@ -672,15 +688,15 @@ colorGray =
 
 
 colorDarkGray =
-    rgb255 88 67 85
+    rgb255 51 51 51
 
 
 colorWhite =
-    rgb255 255 251 232
+    rgb255 238 238 238
 
 
 colorBlack =
-    rgb255 21 21 21
+    rgb255 0 0 0
 
 
 colorGreen =
@@ -691,8 +707,16 @@ colorYellow =
     rgb255 255 223 0
 
 
-colorGleam =
-    rgb255 255 175 243
+colorAkiPurple =
+    rgb255 136 0 136
+
+
+colorAkiBlue =
+    rgb255 0 51 102
+
+
+fgSpecialKey =
+    colorWhite
 
 
 bgGray =
@@ -704,15 +728,19 @@ bgDarkGray =
 
 
 bgWhite =
-    Background.color colorGleam
+    Background.color colorWhite
 
 
 bgGreen =
-    Background.color colorGreen
+    Background.color colorAkiBlue
 
 
 bgYellow =
-    Background.color colorYellow
+    Background.color colorAkiPurple
+
+
+bgSpecialKey =
+    Background.color colorAkiBlue
 
 
 
